@@ -45,7 +45,7 @@ namespace AdvancedDB_Form
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(187, 25);
+            label1.Location = new Point(185, 22);
             label1.Name = "label1";
             label1.Size = new Size(140, 20);
             label1.TabIndex = 0;
@@ -56,7 +56,7 @@ namespace AdvancedDB_Form
             // button1
             // 
             button1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 162);
-            button1.Location = new Point(104, 231);
+            button1.Location = new Point(102, 228);
             button1.Name = "button1";
             button1.Size = new Size(179, 54);
             button1.TabIndex = 1;
@@ -68,7 +68,7 @@ namespace AdvancedDB_Form
             // 
             comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(104, 48);
+            comboBox1.Location = new Point(102, 45);
             comboBox1.Name = "comboBox1";
             comboBox1.Size = new Size(327, 28);
             comboBox1.TabIndex = 2;
@@ -76,7 +76,7 @@ namespace AdvancedDB_Form
             // 
             // numericUpDown1
             // 
-            numericUpDown1.Location = new Point(164, 172);
+            numericUpDown1.Location = new Point(162, 169);
             numericUpDown1.Name = "numericUpDown1";
             numericUpDown1.Size = new Size(71, 27);
             numericUpDown1.TabIndex = 3;
@@ -85,7 +85,7 @@ namespace AdvancedDB_Form
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(104, 174);
+            label2.Location = new Point(102, 171);
             label2.Name = "label2";
             label2.Size = new Size(54, 20);
             label2.TabIndex = 0;
@@ -95,7 +95,7 @@ namespace AdvancedDB_Form
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(104, 119);
+            label4.Location = new Point(102, 116);
             label4.Name = "label4";
             label4.Size = new Size(327, 20);
             label4.TabIndex = 0;
@@ -106,7 +106,7 @@ namespace AdvancedDB_Form
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(301, 174);
+            label3.Location = new Point(299, 171);
             label3.Name = "label3";
             label3.Size = new Size(53, 20);
             label3.TabIndex = 0;
@@ -115,7 +115,7 @@ namespace AdvancedDB_Form
             // 
             // numericUpDown2
             // 
-            numericUpDown2.Location = new Point(360, 172);
+            numericUpDown2.Location = new Point(358, 169);
             numericUpDown2.Name = "numericUpDown2";
             numericUpDown2.Size = new Size(71, 27);
             numericUpDown2.TabIndex = 3;
@@ -123,7 +123,7 @@ namespace AdvancedDB_Form
             // 
             // button2
             // 
-            button2.Location = new Point(310, 231);
+            button2.Location = new Point(308, 228);
             button2.Name = "button2";
             button2.Size = new Size(121, 54);
             button2.TabIndex = 4;

@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace AdvancedDB_Form
 {
-    //DEADLOCK COUNTER WORKS WELL ON SERIALIZABLE LEVEL BUT HAS BUGS ON OTHER LEVELS
+    //DEADLOCK COUNTER WORKS WELL ON SERIALIZABLE LEVEL BUT HAS BUGS ON OTHER LEVELS // fix on the way
     public partial class Form1 : Form
     {
         int transactionNumber = 5; // Set low for testing purposes
@@ -107,7 +107,7 @@ namespace AdvancedDB_Form
                         }
                         catch (SqlException ex)
                         {
-                            if (ex.Number == 1205) // Deadlock error number
+                            if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
                             {
                                 // Deadlock occurred, increment deadlock count for Type A
                                 deadlockCountA++;
@@ -115,7 +115,8 @@ namespace AdvancedDB_Form
                             }
                             else
                             {
-                                Console.WriteLine("Transaction failed: " + ex.Message);
+                                Console.WriteLine("Transaction failed for Type A: " + ex.Message);
+                                Console.WriteLine(ex.Number); // Deadlock error number for each isolation level
                                 transaction.Rollback();
                             }
                         }
@@ -158,7 +159,7 @@ namespace AdvancedDB_Form
                         }
                         catch (SqlException ex)
                         {
-                            if (ex.Number == 1205) // Deadlock error number
+                            if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
                             {
                                 // Deadlock occurred, increment deadlock count for Type B
                                 deadlockCountB++;
@@ -166,7 +167,9 @@ namespace AdvancedDB_Form
                             }
                             else
                             {
-                                Console.WriteLine("Transaction failed: " + ex.Message);
+                                Console.WriteLine("Transaction failed for Type B: " + ex.Message);
+                                Console.WriteLine(ex.Number); // Deadlock error number for each isolation level
+
                                 transaction.Rollback();
                             }
                         }
