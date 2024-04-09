@@ -29,6 +29,7 @@ namespace AdvancedDB_Form
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             label1 = new Label();
             button1 = new Button();
             comboBox1 = new ComboBox();
@@ -45,11 +46,11 @@ namespace AdvancedDB_Form
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(185, 22);
+            label1.Location = new Point(102, 34);
             label1.Name = "label1";
-            label1.Size = new Size(140, 20);
+            label1.Size = new Size(328, 20);
             label1.TabIndex = 0;
-            label1.Text = "Select a read status.";
+            label1.Text = "Select an isolation level and start the simulation.";
             label1.TextAlign = ContentAlignment.MiddleCenter;
             label1.Click += label1_Click;
             // 
@@ -68,7 +69,7 @@ namespace AdvancedDB_Form
             // 
             comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(102, 45);
+            comboBox1.Location = new Point(102, 57);
             comboBox1.Name = "comboBox1";
             comboBox1.Size = new Size(327, 28);
             comboBox1.TabIndex = 2;
@@ -76,7 +77,7 @@ namespace AdvancedDB_Form
             // 
             // numericUpDown1
             // 
-            numericUpDown1.Location = new Point(162, 169);
+            numericUpDown1.Location = new Point(162, 164);
             numericUpDown1.Name = "numericUpDown1";
             numericUpDown1.Size = new Size(71, 27);
             numericUpDown1.TabIndex = 3;
@@ -85,7 +86,7 @@ namespace AdvancedDB_Form
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(102, 171);
+            label2.Location = new Point(102, 166);
             label2.Name = "label2";
             label2.Size = new Size(54, 20);
             label2.TabIndex = 0;
@@ -95,7 +96,7 @@ namespace AdvancedDB_Form
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(102, 116);
+            label4.Location = new Point(102, 111);
             label4.Name = "label4";
             label4.Size = new Size(327, 20);
             label4.TabIndex = 0;
@@ -106,7 +107,7 @@ namespace AdvancedDB_Form
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(299, 171);
+            label3.Location = new Point(299, 166);
             label3.Name = "label3";
             label3.Size = new Size(53, 20);
             label3.TabIndex = 0;
@@ -115,7 +116,7 @@ namespace AdvancedDB_Form
             // 
             // numericUpDown2
             // 
-            numericUpDown2.Location = new Point(358, 169);
+            numericUpDown2.Location = new Point(358, 164);
             numericUpDown2.Name = "numericUpDown2";
             numericUpDown2.Size = new Size(71, 27);
             numericUpDown2.TabIndex = 3;
@@ -145,6 +146,9 @@ namespace AdvancedDB_Form
             Controls.Add(label2);
             Controls.Add(label4);
             Controls.Add(label1);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            MaximizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Transaction Manager";
