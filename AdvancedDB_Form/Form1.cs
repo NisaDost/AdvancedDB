@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AdvancedDB_Form
-{
-    //THREAD TIMER NEEDED!!!
+{    
     public partial class Form1 : Form
     {
-        int transactionNumber = 5; // Set low for testing purposes
+        const String connectionString = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
+
+        int transactionNumber = 10; //Set low for testing purposes
         public Form1()
         {
             InitializeComponent();
@@ -22,8 +23,6 @@ namespace AdvancedDB_Form
         private async void button1_Click(object sender, EventArgs e)
         {
             Console.WriteLine("***\nSimulation started...\n***\n");
-
-            string connectionString = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
 
             int selectedIsolationLevel = comboBox1.SelectedIndex;
             IsolationLevel isolationLevel = GetIsolationLevel(selectedIsolationLevel);
@@ -249,6 +248,11 @@ namespace AdvancedDB_Form
         private void button2_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -152,6 +152,7 @@ namespace AdvancedDB_Form
             Name = "Form1";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Transaction Manager";
+            Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown2).EndInit();
             ResumeLayout(false);
