@@ -1,7 +1,6 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -79,57 +78,6 @@ namespace AdvancedDB_Form
         #endregion
 
         #region User Transaction Methods
-        //private void TypeAUserTransaction(string connectionString, IsolationLevel isolationLevel, ref int deadlockCountA)
-        //{
-        //    var rand = new Random();
-        //    var beginTime = DateTime.Now;
-
-        //    for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
-        //    {
-        //        using (var connection = new SqlConnection(connectionString))
-        //        {
-        //            connection.Open();
-        //            using (var transaction = connection.BeginTransaction(isolationLevel))
-        //            {
-        //                try
-        //                {
-        //                    if (rand.NextDouble() < 0.5)
-        //                        RunUpdateQuery(connection, transaction, "20110101", "20111231");
-        //                    if (rand.NextDouble() < 0.5)
-        //                        RunUpdateQuery(connection, transaction, "20120101", "20121231");
-        //                    if (rand.NextDouble() < 0.5)
-        //                        RunUpdateQuery(connection, transaction, "20130101", "20131231");
-        //                    if (rand.NextDouble() < 0.5)
-        //                        RunUpdateQuery(connection, transaction, "20140101", "20141231");
-        //                    if (rand.NextDouble() < 0.5)
-        //                        RunUpdateQuery(connection, transaction, "20150101", "20151231");
-
-        //                    transaction.Commit();
-        //                }
-        //                catch (SqlException ex)
-        //                {
-        //                    if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
-        //                    {
-        //                        // Deadlock occurred, increment deadlock count for Type A
-        //                        deadlockCountA++;
-        //                        Console.WriteLine("Deadlock occurred for Type A. Continuing gracefully.");
-        //                    }
-        //                    else
-        //                    {
-        //                        Console.WriteLine("Transaction failed for Type A: " + ex.Message);
-        //                        Console.WriteLine(ex.Number); // For observation purposes
-        //                        transaction.Rollback();
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    var endTime = DateTime.Now;
-        //    var elapsed = endTime - beginTime;
-        //    Console.WriteLine($"Elapsed time for Type A user: {elapsed.TotalSeconds} seconds");
-        //}
-
         private void TypeAUserTransaction(string connectionString, IsolationLevel isolationLevel, ref int deadlockCountA)
         {
             var rand = new Random();
@@ -144,18 +92,16 @@ namespace AdvancedDB_Form
                     {
                         try
                         {
-                            var batchQuery = new StringBuilder();
-                            for (int j = 0; j < 100; j++) // Batch size is 5 for TypeAUser
-                            {
-                                if (rand.NextDouble() < 0.5)
-                                    batchQuery.AppendLine($"UPDATE Sales.SalesOrderDetail SET UnitPrice = UnitPrice * 10.0 / 10.0 WHERE UnitPrice > 100 AND EXISTS (SELECT * FROM Sales.SalesOrderHeader WHERE Sales.SalesOrderHeader.SalesOrderID = Sales.SalesOrderDetail.SalesOrderID AND Sales.SalesOrderHeader.OrderDate BETWEEN '20110101' AND '20111231' AND Sales.SalesOrderHeader.OnlineOrderFlag = 1);");
-                                // Add other update queries similarly
-                            }
-
-                            using (var command = new SqlCommand(batchQuery.ToString(), connection, transaction))
-                            {
-                                command.ExecuteNonQuery();
-                            }
+                            if (rand.NextDouble() < 0.5)
+                                RunUpdateQuery(connection, transaction, "20110101", "20111231");
+                            if (rand.NextDouble() < 0.5)
+                                RunUpdateQuery(connection, transaction, "20120101", "20121231");
+                            if (rand.NextDouble() < 0.5)
+                                RunUpdateQuery(connection, transaction, "20130101", "20131231");
+                            if (rand.NextDouble() < 0.5)
+                                RunUpdateQuery(connection, transaction, "20140101", "20141231");
+                            if (rand.NextDouble() < 0.5)
+                                RunUpdateQuery(connection, transaction, "20150101", "20151231");
 
                             transaction.Commit();
                         }
