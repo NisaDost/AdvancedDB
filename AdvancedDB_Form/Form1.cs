@@ -1,60 +1,94 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace AdvancedDB_Form
-{    
+{
     public partial class Form1 : Form
     {
-        const String connectionString = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
+        const String DBIndexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
 
-        int transactionNumber = 10; //Set low for testing purposes
+        const String DBUnindexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;";
+
+        String connectionString;
+
+        private bool isStarted = false;
+
+        private readonly int transactionNumber = 10; //Set low for testing purposes
+        private int deadlockCountA = 0;
+        private int deadlockCountB = 0;
+
         public Form1()
         {
             InitializeComponent();
 
-            comboBox1.Items.AddRange(new object[] { "Read Uncommitted", "Read Committed", "Repeatable Read", "Serializable" });
-            comboBox1.SelectedIndex = 0; // Default Read Uncommitted
+            IsoLvl_Dropdown.Items.AddRange(new object[] { "Read Uncommitted", "Read Committed", "Repeatable Read", "Serializable" });
+            IsoLvl_Dropdown.SelectedIndex = 0; // Default Read Uncommitted
+
+            DBDropdown.Items.AddRange(new object[] { "AdventureWorks2022", "AdventureWorks2022-INDEXED" });
+            DBDropdown.SelectedIndex = 0; // Default AdventureWorks2022
+
+            if (isStarted)
+            {
+                StartSimButton.Enabled = false;
+            }
+            else
+            {
+                StartSimButton.Enabled = true;
+            }
+
         }
 
         #region Start Simulation Button
-        private async void button1_Click(object sender, EventArgs e)
+        private void StartSim_Click(object sender, EventArgs e)
         {
+            //Info console message
             Console.WriteLine("***\nSimulation started...\n***\n");
+            isStarted = true;
 
-            int selectedIsolationLevel = comboBox1.SelectedIndex;
+            int selectedIsolationLevel = IsoLvl_Dropdown.SelectedIndex;
             IsolationLevel isolationLevel = GetIsolationLevel(selectedIsolationLevel);
 
-            int numberOfTypeAUsers = (int)numericUpDown1.Value; // number of type A users
-            int numberOfTypeBUsers = (int)numericUpDown2.Value; // number of type B users
+            int selectedDBIndex = DBDropdown.SelectedIndex;
+            connectionString = SelectedDB(selectedDBIndex);
 
-            int deadlockCountA = 0;
-            int deadlockCountB = 0;
 
-            var tasks = new Task[numberOfTypeAUsers + numberOfTypeBUsers];
+            int numberOfTypeAUsers = (int)TypeADropDown.Value;
+            int numberOfTypeBUsers = (int)TypeBDropDown.Value;
+
+            var threads = new Thread[numberOfTypeAUsers + numberOfTypeBUsers];
 
             var beginTime = DateTime.Now;
 
             for (int i = 0; i < numberOfTypeAUsers; i++)
             {
-                tasks[i] = Task.Run(() => TypeAUserTransaction(connectionString, isolationLevel, ref deadlockCountA));
+                threads[i] = new Thread(() => TypeAUserTransaction(connectionString, isolationLevel));
+                threads[i].Start();
             }
 
             for (int i = numberOfTypeAUsers; i < numberOfTypeAUsers + numberOfTypeBUsers; i++)
             {
-                tasks[i] = Task.Run(() => TypeBUserTransaction(connectionString, isolationLevel, ref deadlockCountB));
+                threads[i] = new Thread(() => TypeBUserTransaction(connectionString, isolationLevel));
+                threads[i].Start();
             }
 
-            await Task.WhenAll(tasks);
+            // Wait for all threads to finish
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
 
             var endTime = DateTime.Now;
             var elapsed = endTime - beginTime;
 
+            //Message Box
             MessageBox.Show($"Isolation level: {isolationLevel} \nElapsed time: {elapsed.TotalSeconds} seconds\nDeadlocks (Type A): {deadlockCountA}\nDeadlocks (Type B): {deadlockCountB}", "Simulation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+            //Info console message
             Console.WriteLine("\n***\nSimulation complete.\n***\n");
+            isStarted = false;
         }
         #endregion
 
@@ -77,8 +111,24 @@ namespace AdvancedDB_Form
         }
         #endregion
 
+        #region Select Database
+        private String SelectedDB(int selectedDBIndex)
+        {
+
+            switch (selectedDBIndex)
+            {
+                case 0:
+                    return connectionString = DBIndexed;
+                case 1:
+                    return connectionString = DBUnindexed;
+                default:
+                    return connectionString = DBUnindexed; // Default to AdventureWorks2022
+            }
+        }
+        #endregion
+
         #region User Transaction Methods
-        private void TypeAUserTransaction(string connectionString, IsolationLevel isolationLevel, ref int deadlockCountA)
+        private void TypeAUserTransaction(string connectionString, IsolationLevel isolationLevel)
         {
             var rand = new Random();
             var beginTime = DateTime.Now;
@@ -110,7 +160,7 @@ namespace AdvancedDB_Form
                             if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
                             {
                                 // Deadlock occurred, increment deadlock count for Type A
-                                deadlockCountA++;
+                                Interlocked.Increment(ref deadlockCountA);
                                 Console.WriteLine("Deadlock occurred for Type A. Continuing gracefully.");
                             }
                             else
@@ -130,7 +180,7 @@ namespace AdvancedDB_Form
         }
 
 
-        private void TypeBUserTransaction(string connectionString, IsolationLevel isolationLevel, ref int deadlockCountB)
+        private void TypeBUserTransaction(string connectionString, IsolationLevel isolationLevel)
         {
             var rand = new Random();
             var beginTime = DateTime.Now;
@@ -162,7 +212,7 @@ namespace AdvancedDB_Form
                             if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
                             {
                                 // Deadlock occurred, increment deadlock count for Type B
-                                deadlockCountB++;
+                                Interlocked.Increment(ref deadlockCountB);
                                 Console.WriteLine("Deadlock occurred for Type B. Continuing gracefully.");
                             }
                             else
@@ -229,30 +279,9 @@ namespace AdvancedDB_Form
         }
         #endregion
 
-        #region Necessary methods
-        // IDK why but without this methods the program won't run
-        private void label1_Click(object sender, EventArgs e)
-        {
-        }
-
-        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void numericUpDown2_ValueChanged(object sender, EventArgs e)
-        {
-
-        }
-        #endregion
-        private void button2_Click(object sender, EventArgs e)
+        private void QuitButton_Click(object sender, EventArgs e)
         {
             this.Close();
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
         }
     }
 }

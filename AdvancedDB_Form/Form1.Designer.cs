@@ -30,131 +30,145 @@ namespace AdvancedDB_Form
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            label1 = new Label();
-            button1 = new Button();
-            comboBox1 = new ComboBox();
-            numericUpDown1 = new NumericUpDown();
-            label2 = new Label();
-            label4 = new Label();
-            label3 = new Label();
-            numericUpDown2 = new NumericUpDown();
-            button2 = new Button();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown2).BeginInit();
+            IsoLvlText = new Label();
+            StartSimButton = new Button();
+            IsoLvl_Dropdown = new ComboBox();
+            TypeADropDown = new NumericUpDown();
+            TypeAText = new Label();
+            UsersText = new Label();
+            TypeBText = new Label();
+            TypeBDropDown = new NumericUpDown();
+            QuitButton = new Button();
+            SelectDB = new Label();
+            DBDropdown = new ComboBox();
+            ((System.ComponentModel.ISupportInitialize)TypeADropDown).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)TypeBDropDown).BeginInit();
             SuspendLayout();
             // 
-            // label1
+            // IsoLvlText
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(102, 34);
-            label1.Name = "label1";
-            label1.Size = new Size(328, 20);
-            label1.TabIndex = 0;
-            label1.Text = "Select an isolation level and start the simulation.";
-            label1.TextAlign = ContentAlignment.MiddleCenter;
-            label1.Click += label1_Click;
+            IsoLvlText.AutoSize = true;
+            IsoLvlText.Location = new Point(100, 142);
+            IsoLvlText.Name = "IsoLvlText";
+            IsoLvlText.Size = new Size(328, 20);
+            IsoLvlText.TabIndex = 0;
+            IsoLvlText.Text = "Select an isolation level and start the simulation.";
+            IsoLvlText.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // button1
+            // StartSimButton
             // 
-            button1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 162);
-            button1.Location = new Point(102, 228);
-            button1.Name = "button1";
-            button1.Size = new Size(179, 54);
-            button1.TabIndex = 1;
-            button1.Text = "Start simulation";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            StartSimButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 162);
+            StartSimButton.Location = new Point(100, 336);
+            StartSimButton.Name = "StartSimButton";
+            StartSimButton.Size = new Size(179, 54);
+            StartSimButton.TabIndex = 1;
+            StartSimButton.Text = "Start simulation";
+            StartSimButton.UseVisualStyleBackColor = true;
+            StartSimButton.Click += StartSim_Click;
             // 
-            // comboBox1
+            // IsoLvl_Dropdown
             // 
-            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(102, 57);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(327, 28);
-            comboBox1.TabIndex = 2;
-            comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
+            IsoLvl_Dropdown.DropDownStyle = ComboBoxStyle.DropDownList;
+            IsoLvl_Dropdown.FormattingEnabled = true;
+            IsoLvl_Dropdown.Location = new Point(100, 165);
+            IsoLvl_Dropdown.Name = "IsoLvl_Dropdown";
+            IsoLvl_Dropdown.Size = new Size(327, 28);
+            IsoLvl_Dropdown.TabIndex = 2;
+            IsoLvl_Dropdown.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
-            // numericUpDown1
+            // TypeADropDown
             // 
-            numericUpDown1.Location = new Point(162, 164);
-            numericUpDown1.Name = "numericUpDown1";
-            numericUpDown1.Size = new Size(71, 27);
-            numericUpDown1.TabIndex = 3;
-            numericUpDown1.ValueChanged += numericUpDown1_ValueChanged;
+            TypeADropDown.Location = new Point(160, 272);
+            TypeADropDown.Name = "TypeADropDown";
+            TypeADropDown.Size = new Size(71, 27);
+            TypeADropDown.TabIndex = 3;
             // 
-            // label2
+            // TypeAText
             // 
-            label2.AutoSize = true;
-            label2.Location = new Point(102, 166);
-            label2.Name = "label2";
-            label2.Size = new Size(54, 20);
-            label2.TabIndex = 0;
-            label2.Text = "Type A";
-            label2.Click += label1_Click;
+            TypeAText.AutoSize = true;
+            TypeAText.Location = new Point(100, 288);
+            TypeAText.Name = "TypeAText";
+            TypeAText.Size = new Size(54, 20);
+            TypeAText.TabIndex = 0;
+            TypeAText.Text = "Type A";
             // 
-            // label4
+            // UsersText
             // 
-            label4.AutoSize = true;
-            label4.Location = new Point(102, 111);
-            label4.Name = "label4";
-            label4.Size = new Size(327, 20);
-            label4.TabIndex = 0;
-            label4.Text = "Select numbers of users to perform transactions.";
-            label4.TextAlign = ContentAlignment.MiddleCenter;
-            label4.Click += label1_Click;
+            UsersText.AutoSize = true;
+            UsersText.Location = new Point(100, 219);
+            UsersText.Name = "UsersText";
+            UsersText.Size = new Size(327, 20);
+            UsersText.TabIndex = 0;
+            UsersText.Text = "Select numbers of users to perform transactions.";
+            UsersText.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label3
+            // TypeBText
             // 
-            label3.AutoSize = true;
-            label3.Location = new Point(299, 166);
-            label3.Name = "label3";
-            label3.Size = new Size(53, 20);
-            label3.TabIndex = 0;
-            label3.Text = "Type B";
-            label3.Click += label1_Click;
+            TypeBText.AutoSize = true;
+            TypeBText.Location = new Point(297, 274);
+            TypeBText.Name = "TypeBText";
+            TypeBText.Size = new Size(53, 20);
+            TypeBText.TabIndex = 0;
+            TypeBText.Text = "Type B";
             // 
-            // numericUpDown2
+            // TypeBDropDown
             // 
-            numericUpDown2.Location = new Point(358, 164);
-            numericUpDown2.Name = "numericUpDown2";
-            numericUpDown2.Size = new Size(71, 27);
-            numericUpDown2.TabIndex = 3;
-            numericUpDown2.ValueChanged += numericUpDown1_ValueChanged;
+            TypeBDropDown.Location = new Point(356, 272);
+            TypeBDropDown.Name = "TypeBDropDown";
+            TypeBDropDown.Size = new Size(71, 27);
+            TypeBDropDown.TabIndex = 3;
             // 
-            // button2
+            // QuitButton
             // 
-            button2.Location = new Point(308, 228);
-            button2.Name = "button2";
-            button2.Size = new Size(121, 54);
-            button2.TabIndex = 4;
-            button2.Text = "Quit";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += button2_Click;
+            QuitButton.Location = new Point(306, 336);
+            QuitButton.Name = "QuitButton";
+            QuitButton.Size = new Size(121, 54);
+            QuitButton.TabIndex = 4;
+            QuitButton.Text = "Quit";
+            QuitButton.UseVisualStyleBackColor = true;
+            QuitButton.Click += QuitButton_Click;
+            // 
+            // SelectDB
+            // 
+            SelectDB.AutoSize = true;
+            SelectDB.Location = new Point(100, 62);
+            SelectDB.Name = "SelectDB";
+            SelectDB.Size = new Size(328, 20);
+            SelectDB.TabIndex = 5;
+            SelectDB.Text = "Select a database to manipulate the data inside.";
+            // 
+            // DBDropdown
+            // 
+            DBDropdown.FormattingEnabled = true;
+            DBDropdown.Location = new Point(100, 85);
+            DBDropdown.Name = "DBDropdown";
+            DBDropdown.Size = new Size(327, 28);
+            DBDropdown.TabIndex = 6;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(537, 315);
-            Controls.Add(button2);
-            Controls.Add(numericUpDown2);
-            Controls.Add(numericUpDown1);
-            Controls.Add(comboBox1);
-            Controls.Add(button1);
-            Controls.Add(label3);
-            Controls.Add(label2);
-            Controls.Add(label4);
-            Controls.Add(label1);
+            ClientSize = new Size(533, 437);
+            Controls.Add(DBDropdown);
+            Controls.Add(SelectDB);
+            Controls.Add(QuitButton);
+            Controls.Add(TypeBDropDown);
+            Controls.Add(TypeADropDown);
+            Controls.Add(IsoLvl_Dropdown);
+            Controls.Add(StartSimButton);
+            Controls.Add(TypeBText);
+            Controls.Add(TypeAText);
+            Controls.Add(UsersText);
+            Controls.Add(IsoLvlText);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Transaction Manager";
-            Load += Form1_Load;
-            ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown2).EndInit();
+            ((System.ComponentModel.ISupportInitialize)TypeADropDown).EndInit();
+            ((System.ComponentModel.ISupportInitialize)TypeBDropDown).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -166,14 +180,16 @@ namespace AdvancedDB_Form
 
         #endregion
 
-        private Label label1;
-        private Button button1;
-        private ComboBox comboBox1;
-        private NumericUpDown numericUpDown1;
-        private Label label2;
-        private Label label4;
-        private Label label3;
-        private NumericUpDown numericUpDown2;
-        private Button button2;
+        private Label IsoLvlText;
+        private Button StartSimButton;
+        private ComboBox IsoLvl_Dropdown;
+        private NumericUpDown TypeADropDown;
+        private Label TypeAText;
+        private Label UsersText;
+        private Label TypeBText;
+        private NumericUpDown TypeBDropDown;
+        private Button QuitButton;
+        private Label SelectDB;
+        private ComboBox DBDropdown;
     }
 }
