@@ -133,12 +133,13 @@ namespace AdvancedDB_Form
             var rand = new Random();
             var beginTime = DateTime.Now;
 
-            for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
+            using (var connection = new SqlConnection(connectionString))
             {
-                using (var connection = new SqlConnection(connectionString))
+                //for döngüsü con.open() dan sonra mý olmalý?
+                connection.Open();
+                using (var transaction = connection.BeginTransaction(isolationLevel))
                 {
-                    connection.Open();
-                    using (var transaction = connection.BeginTransaction(isolationLevel))
+                    for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
                     {
                         try
                         {
@@ -185,11 +186,12 @@ namespace AdvancedDB_Form
             var rand = new Random();
             var beginTime = DateTime.Now;
 
-            for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
+            using (var connection = new SqlConnection(connectionString))
             {
-                using (var connection = new SqlConnection(connectionString))
+                //for döngüsü con.open() dan sonra mý olmalý?
+                connection.Open();
+                for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
                 {
-                    connection.Open();
                     using (var transaction = connection.BeginTransaction(isolationLevel))
                     {
                         try

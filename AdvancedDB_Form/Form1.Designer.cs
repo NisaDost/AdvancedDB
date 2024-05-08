@@ -86,7 +86,7 @@ namespace AdvancedDB_Form
             // TypeAText
             // 
             TypeAText.AutoSize = true;
-            TypeAText.Location = new Point(100, 288);
+            TypeAText.Location = new Point(100, 274);
             TypeAText.Name = "TypeAText";
             TypeAText.Size = new Size(54, 20);
             TypeAText.TabIndex = 0;
