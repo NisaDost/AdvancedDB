@@ -17,7 +17,7 @@ namespace AdvancedDB2
 
         private bool isStarted = false;
 
-        private readonly int transactionNumber = 10; //Set low for testing purposes
+        private readonly int transactionNumber = 100; //Set low for testing purposes
         private int deadlockCountA = 0;
         private int deadlockCountB = 0;
         public Form1()
