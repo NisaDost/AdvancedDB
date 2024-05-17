@@ -2,21 +2,20 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AdvancedDB2
 {
     public partial class Form1 : Form
     {
-        const String DBIndexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
-
-        const String DBUnindexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;";
-
-        String connectionString;
+        const string DBIndexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;Pooling=true;Min Pool Size=10;Max Pool Size=250";
+        const string DBUnindexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;Pooling=true;Min Pool Size=10;Max Pool Size=250";
+        string connectionString;
 
         private bool isStarted = false;
 
-        private readonly int transactionNumber = 10; //Set low for testing purposes
+        private readonly int transactionNumber = 100; // Set low for testing purposes
         private int deadlockCountA = 0;
         private int deadlockCountB = 0;
 
@@ -38,13 +37,12 @@ namespace AdvancedDB2
             {
                 StartSimButton.Enabled = true;
             }
-
         }
 
         #region Start Simulation Button
-        private void StartSim_Click(object sender, EventArgs e)
+        private async void StartSim_Click(object sender, EventArgs e)
         {
-            //Info console message
+            // Info console message
             Console.WriteLine("***\nSimulation started...\n***\n");
             isStarted = true;
 
@@ -54,39 +52,33 @@ namespace AdvancedDB2
             int selectedDBIndex = DBDropdown.SelectedIndex;
             connectionString = SelectedDB(selectedDBIndex);
 
-
             int numberOfTypeAUsers = (int)TypeADropDown.Value;
             int numberOfTypeBUsers = (int)TypeBDropDown.Value;
 
-            var threads = new Thread[numberOfTypeAUsers + numberOfTypeBUsers];
+            var tasks = new Task[numberOfTypeAUsers + numberOfTypeBUsers];
 
             var beginTime = DateTime.Now;
 
             for (int i = 0; i < numberOfTypeAUsers; i++)
             {
-                threads[i] = new Thread(() => TypeAUserTransaction(connectionString, isolationLevel));
-                threads[i].Start();
+                tasks[i] = Task.Run(() => TypeAUserTransactionAsync(connectionString, isolationLevel));
             }
 
             for (int i = numberOfTypeAUsers; i < numberOfTypeAUsers + numberOfTypeBUsers; i++)
             {
-                threads[i] = new Thread(() => TypeBUserTransaction(connectionString, isolationLevel));
-                threads[i].Start();
+                tasks[i] = Task.Run(() => TypeBUserTransactionAsync(connectionString, isolationLevel));
             }
 
-            // Wait for all threads to finish
-            foreach (var thread in threads)
-            {
-                thread.Join();
-            }
+            // Wait for all tasks to complete
+            await Task.WhenAll(tasks);
 
             var endTime = DateTime.Now;
             var elapsed = endTime - beginTime;
 
-            //Message Box
+            // Message Box
             MessageBox.Show($"Isolation level: {isolationLevel} \nElapsed time: {elapsed.TotalSeconds} seconds\nDeadlocks (Type A): {deadlockCountA}\nDeadlocks (Type B): {deadlockCountB}", "Simulation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            //Info console message
+            // Info console message
             Console.WriteLine("\n***\nSimulation complete.\n***\n");
             isStarted = false;
         }
@@ -112,63 +104,69 @@ namespace AdvancedDB2
         #endregion
 
         #region Select Database
-        private String SelectedDB(int selectedDBIndex)
+        private string SelectedDB(int selectedDBIndex)
         {
-
             switch (selectedDBIndex)
             {
                 case 0:
-                    return connectionString = DBIndexed;
+                    return DBIndexed;
                 case 1:
-                    return connectionString = DBUnindexed;
+                    return DBUnindexed;
                 default:
-                    return connectionString = DBUnindexed; // Default to AdventureWorks2022
+                    return DBUnindexed; // Default to AdventureWorks2022
             }
         }
         #endregion
 
         #region User Transaction Methods
-        private void TypeAUserTransaction(string connectionString, IsolationLevel isolationLevel)
+        private async Task TypeAUserTransactionAsync(string connectionString, IsolationLevel isolationLevel)
         {
             var rand = new Random();
             var beginTime = DateTime.Now;
 
             using (var connection = new SqlConnection(connectionString))
             {
-                //for döngüsü con.open() dan sonra mı olmalı?
-                connection.Open();
-                using (var transaction = connection.BeginTransaction(isolationLevel))
+                await connection.OpenAsync();
+                for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
                 {
-                    for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
+                    bool success = false;
+                    int retryCount = 0;
+                    while (!success && retryCount < 3)
                     {
-                        try
+                        using (var transaction = connection.BeginTransaction(isolationLevel))
                         {
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20110101", "20111231");
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20120101", "20121231");
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20130101", "20131231");
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20140101", "20141231");
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20150101", "20151231");
+                            try
+                            {
+                                if (rand.NextDouble() < 0.5)
+                                    await RunUpdateQueryAsync(connection, transaction, "20110101", "20111231");
+                                if (rand.NextDouble() < 0.5)
+                                    await RunUpdateQueryAsync(connection, transaction, "20120101", "20121231");
+                                if (rand.NextDouble() < 0.5)
+                                    await RunUpdateQueryAsync(connection, transaction, "20130101", "20131231");
+                                if (rand.NextDouble() < 0.5)
+                                    await RunUpdateQueryAsync(connection, transaction, "20140101", "20141231");
+                                if (rand.NextDouble() < 0.5)
+                                    await RunUpdateQueryAsync(connection, transaction, "20150101", "20151231");
 
-                            //transaction.Commit();
-                        }
-                        catch (SqlException ex)
-                        {
-                            if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
-                            {
-                                // Deadlock occurred, increment deadlock count for Type A
-                                Interlocked.Increment(ref deadlockCountA);
-                                Console.WriteLine("Deadlock occurred for Type A. Continuing gracefully.");
+                                transaction.Commit();
+                                success = true;
                             }
-                            else
+                            catch (SqlException ex)
                             {
-                                Console.WriteLine("Transaction failed for Type A: " + ex.Message);
-                                Console.WriteLine(ex.Number); // For observation purposes
-                                transaction.Rollback();
+                                if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
+                                {
+                                    Interlocked.Increment(ref deadlockCountA);
+                                    Console.WriteLine("Deadlock occurred for Type A. Retrying...");
+                                    transaction.Rollback();
+                                    await Task.Delay(100); // Backoff strategy
+                                    retryCount++;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Transaction failed for Type A: " + ex.Message);
+                                    transaction.Rollback();
+                                    break;
+                                }
                             }
                         }
                     }
@@ -180,49 +178,54 @@ namespace AdvancedDB2
             Console.WriteLine($"Elapsed time for Type A user: {elapsed.TotalSeconds} seconds");
         }
 
-
-        private void TypeBUserTransaction(string connectionString, IsolationLevel isolationLevel)
+        private async Task TypeBUserTransactionAsync(string connectionString, IsolationLevel isolationLevel)
         {
             var rand = new Random();
             var beginTime = DateTime.Now;
 
             using (var connection = new SqlConnection(connectionString))
             {
-                //for döngüsü con.open() dan sonra mı olmalı?
-                connection.Open();
+                await connection.OpenAsync();
                 for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
                 {
-                    using (var transaction = connection.BeginTransaction(isolationLevel))
+                    bool success = false;
+                    int retryCount = 0;
+                    while (!success && retryCount < 3)
                     {
-                        try
+                        using (var transaction = connection.BeginTransaction(isolationLevel))
                         {
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20110101", "20111231");
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20120101", "20121231");
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20130101", "20131231");
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20140101", "20141231");
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20150101", "20151231");
-
-                            //transaction.Commit();
-                        }
-                        catch (SqlException ex)
-                        {
-                            if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
+                            try
                             {
-                                // Deadlock occurred, increment deadlock count for Type B
-                                Interlocked.Increment(ref deadlockCountB);
-                                Console.WriteLine("Deadlock occurred for Type B. Continuing gracefully.");
+                                if (rand.NextDouble() < 0.5)
+                                    await RunSelectQueryAsync(connection, transaction, "20110101", "20111231");
+                                if (rand.NextDouble() < 0.5)
+                                    await RunSelectQueryAsync(connection, transaction, "20120101", "20121231");
+                                if (rand.NextDouble() < 0.5)
+                                    await RunSelectQueryAsync(connection, transaction, "20130101", "20131231");
+                                if (rand.NextDouble() < 0.5)
+                                    await RunSelectQueryAsync(connection, transaction, "20140101", "20141231");
+                                if (rand.NextDouble() < 0.5)
+                                    await RunSelectQueryAsync(connection, transaction, "20150101", "20151231");
+
+                                transaction.Commit();
+                                success = true;
                             }
-                            else
+                            catch (SqlException ex)
                             {
-                                Console.WriteLine("Transaction failed for Type B: " + ex.Message);
-                                Console.WriteLine(ex.Number); // For observation purposes
-
-                                transaction.Rollback();
+                                if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
+                                {
+                                    Interlocked.Increment(ref deadlockCountB);
+                                    Console.WriteLine("Deadlock occurred for Type B. Retrying...");
+                                    transaction.Rollback();
+                                    await Task.Delay(100); // Backoff strategy
+                                    retryCount++;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Transaction failed for Type B: " + ex.Message);
+                                    transaction.Rollback();
+                                    break;
+                                }
                             }
                         }
                     }
@@ -231,14 +234,12 @@ namespace AdvancedDB2
 
             var endTime = DateTime.Now;
             var elapsed = endTime - beginTime;
-
             Console.WriteLine($"Elapsed time for Type B user: {elapsed.TotalSeconds} seconds");
         }
-
         #endregion
 
         #region SQL Queries
-        static void RunUpdateQuery(SqlConnection connection, SqlTransaction transaction, string beginDate, string endDate)
+        static async Task RunUpdateQueryAsync(SqlConnection connection, SqlTransaction transaction, string beginDate, string endDate)
         {
             string updateQuery = @"
                 UPDATE Sales.SalesOrderDetail
@@ -255,11 +256,12 @@ namespace AdvancedDB2
             {
                 command.Parameters.AddWithValue("@BeginDate", beginDate);
                 command.Parameters.AddWithValue("@EndDate", endDate);
-                command.ExecuteNonQuery();
+                command.CommandTimeout = 120;
+                await command.ExecuteNonQueryAsync();
             }
         }
 
-        static void RunSelectQuery(SqlConnection connection, SqlTransaction transaction, string beginDate, string endDate)
+        static async Task RunSelectQueryAsync(SqlConnection connection, SqlTransaction transaction, string beginDate, string endDate)
         {
             string selectQuery = @"
                 SELECT SUM(Sales.SalesOrderDetail.OrderQty)
@@ -276,7 +278,8 @@ namespace AdvancedDB2
             {
                 command.Parameters.AddWithValue("@BeginDate", beginDate);
                 command.Parameters.AddWithValue("@EndDate", endDate);
-                command.ExecuteScalar();
+                command.CommandTimeout = 120;
+                await command.ExecuteScalarAsync();
             }
         }
         #endregion
