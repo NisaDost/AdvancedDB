@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -8,9 +9,9 @@ namespace AdvancedDB2
 {
     public partial class Form1 : Form
     {
-        const String DBIndexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
+        const String DBIndexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
 
-        const String DBUnindexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;";
+        const String DBUnindexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;";
 
         String connectionString;
 
@@ -19,7 +20,6 @@ namespace AdvancedDB2
         private readonly int transactionNumber = 10; //Set low for testing purposes
         private int deadlockCountA = 0;
         private int deadlockCountB = 0;
-
         public Form1()
         {
             InitializeComponent();
@@ -64,14 +64,16 @@ namespace AdvancedDB2
 
             for (int i = 0; i < numberOfTypeAUsers; i++)
             {
-                threads[i] = new Thread(() => TypeAUserTransaction(connectionString, isolationLevel));
+                int index = i + 1; // Thread index starts from 1
+                threads[i] = new Thread(() => TypeAUserTransaction(connectionString, isolationLevel, index));
                 threads[i].Start();
             }
 
-            for (int i = numberOfTypeAUsers; i < numberOfTypeAUsers + numberOfTypeBUsers; i++)
+            for (int i = 0; i < numberOfTypeBUsers; i++)
             {
-                threads[i] = new Thread(() => TypeBUserTransaction(connectionString, isolationLevel));
-                threads[i].Start();
+                int index = i + 1; // Thread index starts from 1
+                threads[numberOfTypeAUsers + i] = new Thread(() => TypeBUserTransaction(connectionString, isolationLevel, index));
+                threads[numberOfTypeAUsers + i].Start();
             }
 
             // Wait for all threads to finish
@@ -128,33 +130,70 @@ namespace AdvancedDB2
         #endregion
 
         #region User Transaction Methods
-        private void TypeAUserTransaction(string connectionString, IsolationLevel isolationLevel)
+        private void TypeAUserTransaction(string connectionString, IsolationLevel isolationLevel, int whichUser)
         {
             var rand = new Random();
             var beginTime = DateTime.Now;
+            var timeoutA = 0;
 
             using (var connection = new SqlConnection(connectionString))
             {
-                //for döngüsü con.open() dan sonra mı olmalı?
                 connection.Open();
-                using (var transaction = connection.BeginTransaction(isolationLevel))
+
+                for (int i = 0; i < transactionNumber; i++) // Perform 10 transactions
                 {
-                    for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
+                    Debug.WriteLine("Type A For içi: " + i);
+                    using (var transaction = connection.BeginTransaction(isolationLevel))
                     {
                         try
                         {
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20110101", "20111231");
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20120101", "20121231");
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20130101", "20131231");
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20140101", "20141231");
-                            if (rand.NextDouble() < 0.5)
-                                RunUpdateQuery(connection, transaction, "20150101", "20151231");
+                            bool isUpdated = false;
+                            var begindate = "20110101";
+                            var enddate = "20111231";
 
-                            //transaction.Commit();
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20110101";
+                                enddate = "20111231";
+                                isUpdated = true;
+                            }
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20120101";
+                                enddate = "20121231";
+                                isUpdated = true;
+                            }
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20130101";
+                                enddate = "20131231";
+                                isUpdated = true;
+                            }
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20140101";
+                                enddate = "20141231";
+                                isUpdated = true;
+                            }
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20150101";
+                                enddate = "20151231";
+                                isUpdated = true;
+                            }
+
+                            RunUpdateQuery(connection, transaction, begindate, enddate);
+
+                            if (isUpdated)
+                            {
+                                Debug.WriteLine("Type A before commit.");
+                                transaction.Commit();
+                                Debug.WriteLine("Type A after commit.");
+                            }
+                            else
+                            {
+                                transaction.Rollback();
+                            }
                         }
                         catch (SqlException ex)
                         {
@@ -163,12 +202,26 @@ namespace AdvancedDB2
                                 // Deadlock occurred, increment deadlock count for Type A
                                 Interlocked.Increment(ref deadlockCountA);
                                 Console.WriteLine("Deadlock occurred for Type A. Continuing gracefully.");
+                                // Wait for a short period and retry
+                                Thread.Sleep(rand.Next(100, 500));
+                                i--; // Retry the current transaction
                             }
                             else
                             {
-                                Console.WriteLine("Transaction failed for Type A: " + ex.Message);
-                                Console.WriteLine(ex.Number); // For observation purposes
-                                transaction.Rollback();
+                                Debug.WriteLine("Transaction failed for Type A: " + ex.Message);
+                                Debug.WriteLine(ex.Number); // For observation purposes
+                                timeoutA++;
+                                i--;
+                                try
+                                {
+                                    Debug.WriteLine("Rollback Started.");
+                                    transaction.Rollback();
+                                    Debug.WriteLine("Rollback Ended.");
+                                }
+                                catch (Exception rollbackEx)
+                                {
+                                    Debug.WriteLine("Rollback failed: " + rollbackEx.Message);
+                                }
                             }
                         }
                     }
@@ -177,37 +230,74 @@ namespace AdvancedDB2
 
             var endTime = DateTime.Now;
             var elapsed = endTime - beginTime;
-            Console.WriteLine($"Elapsed time for Type A user: {elapsed.TotalSeconds} seconds");
+            Console.WriteLine($"Elapsed time for Type A user {whichUser}: {elapsed.TotalSeconds} seconds. Timeout A: {timeoutA}. Normal Time for A: {elapsed.TotalSeconds - timeoutA}");
         }
 
-
-        private void TypeBUserTransaction(string connectionString, IsolationLevel isolationLevel)
+        private void TypeBUserTransaction(string connectionString, IsolationLevel isolationLevel, int whichUser)
         {
             var rand = new Random();
             var beginTime = DateTime.Now;
+            var timeoutB = 0;
 
             using (var connection = new SqlConnection(connectionString))
             {
-                //for döngüsü con.open() dan sonra mı olmalı?
                 connection.Open();
-                for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
+
+                for (int i = 0; i < transactionNumber; i++) // Perform 10 transactions
                 {
+                    Debug.WriteLine("Type B For içi: " + i);
+
                     using (var transaction = connection.BeginTransaction(isolationLevel))
                     {
                         try
                         {
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20110101", "20111231");
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20120101", "20121231");
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20130101", "20131231");
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20140101", "20141231");
-                            if (rand.NextDouble() < 0.5)
-                                RunSelectQuery(connection, transaction, "20150101", "20151231");
+                            bool isSelected = false;
+                            var begindate = "20110101";
+                            var enddate = "20111231";
 
-                            //transaction.Commit();
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20110101";
+                                enddate = "20111231";
+                                isSelected = true;
+                            }
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20120101";
+                                enddate = "20121231";
+                                isSelected = true;
+                            }
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20130101";
+                                enddate = "20131231";
+                                isSelected = true;
+                            }
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20140101";
+                                enddate = "20141231";
+                                isSelected = true;
+                            }
+                            if (rand.NextDouble() < 0.5)
+                            {
+                                begindate = "20150101";
+                                enddate = "20151231";
+                                isSelected = true;
+                            }
+
+                            RunSelectQuery(connection, transaction, begindate, enddate);
+
+                            if (isSelected)
+                            {
+                                Debug.WriteLine("Type B before commit.");
+                                transaction.Commit();
+                                Debug.WriteLine("Type B after commit.");
+                            }
+                            else
+                            {
+                                transaction.Rollback();
+                            }
                         }
                         catch (SqlException ex)
                         {
@@ -215,14 +305,22 @@ namespace AdvancedDB2
                             {
                                 // Deadlock occurred, increment deadlock count for Type B
                                 Interlocked.Increment(ref deadlockCountB);
-                                Console.WriteLine("Deadlock occurred for Type B. Continuing gracefully.");
+                                Debug.WriteLine("Deadlock occurred for Type B. Continuing gracefully.");
                             }
                             else
                             {
-                                Console.WriteLine("Transaction failed for Type B: " + ex.Message);
-                                Console.WriteLine(ex.Number); // For observation purposes
-
-                                transaction.Rollback();
+                                Debug.WriteLine("Transaction failed for Type B: " + ex.Message);
+                                Debug.WriteLine(ex.Number); // For observation purposes
+                                timeoutB++;
+                                i--;
+                                try
+                                {
+                                    transaction.Rollback();
+                                }
+                                catch (Exception rollbackEx)
+                                {
+                                    Debug.WriteLine("Rollback failed: " + rollbackEx.Message);
+                                }
                             }
                         }
                     }
@@ -232,27 +330,26 @@ namespace AdvancedDB2
             var endTime = DateTime.Now;
             var elapsed = endTime - beginTime;
 
-            Console.WriteLine($"Elapsed time for Type B user: {elapsed.TotalSeconds} seconds");
+            Console.WriteLine($"Elapsed time for Type B user {whichUser}: {elapsed.TotalSeconds} seconds. Timeout B: {timeoutB}. Normal Time for B: {elapsed.TotalSeconds - timeoutB}");
         }
-
-        #endregion
 
         #region SQL Queries
         static void RunUpdateQuery(SqlConnection connection, SqlTransaction transaction, string beginDate, string endDate)
         {
             string updateQuery = @"
-                UPDATE Sales.SalesOrderDetail
-                SET UnitPrice = UnitPrice * 10.0 / 10.0
-                WHERE UnitPrice > 100
-                AND EXISTS (
-                    SELECT * FROM Sales.SalesOrderHeader
-                    WHERE Sales.SalesOrderHeader.SalesOrderID = Sales.SalesOrderDetail.SalesOrderID
-                    AND Sales.SalesOrderHeader.OrderDate BETWEEN @BeginDate AND @EndDate
-                    AND Sales.SalesOrderHeader.OnlineOrderFlag = 1
-                )";
+        UPDATE Sales.SalesOrderDetail
+        SET UnitPrice = UnitPrice * 10.0 / 10.0
+        WHERE UnitPrice > 100
+        AND EXISTS (
+            SELECT * FROM Sales.SalesOrderHeader
+            WHERE Sales.SalesOrderHeader.SalesOrderID = Sales.SalesOrderDetail.SalesOrderID
+            AND Sales.SalesOrderHeader.OrderDate BETWEEN @BeginDate AND @EndDate
+            AND Sales.SalesOrderHeader.OnlineOrderFlag = 1
+        )";
 
             using (var command = new SqlCommand(updateQuery, connection, transaction))
             {
+                command.CommandTimeout = 1;
                 command.Parameters.AddWithValue("@BeginDate", beginDate);
                 command.Parameters.AddWithValue("@EndDate", endDate);
                 command.ExecuteNonQuery();
@@ -262,28 +359,36 @@ namespace AdvancedDB2
         static void RunSelectQuery(SqlConnection connection, SqlTransaction transaction, string beginDate, string endDate)
         {
             string selectQuery = @"
-                SELECT SUM(Sales.SalesOrderDetail.OrderQty)
-                FROM Sales.SalesOrderDetail
-                WHERE UnitPrice > 100
-                AND EXISTS (
-                    SELECT * FROM Sales.SalesOrderHeader
-                    WHERE Sales.SalesOrderHeader.SalesOrderID = Sales.SalesOrderDetail.SalesOrderID
-                    AND Sales.SalesOrderHeader.OrderDate BETWEEN @BeginDate AND @EndDate
-                    AND Sales.SalesOrderHeader.OnlineOrderFlag = 1
-                )";
+        SELECT SUM(Sales.SalesOrderDetail.OrderQty)
+        FROM Sales.SalesOrderDetail
+        WHERE UnitPrice > 100
+        AND EXISTS (
+            SELECT * FROM Sales.SalesOrderHeader
+            WHERE Sales.SalesOrderHeader.SalesOrderID = Sales.SalesOrderDetail.SalesOrderID
+            AND Sales.SalesOrderHeader.OrderDate BETWEEN @BeginDate AND @EndDate
+            AND Sales.SalesOrderHeader.OnlineOrderFlag = 1
+        )";
 
             using (var command = new SqlCommand(selectQuery, connection, transaction))
             {
+                command.CommandTimeout = 1;
                 command.Parameters.AddWithValue("@BeginDate", beginDate);
                 command.Parameters.AddWithValue("@EndDate", endDate);
                 command.ExecuteScalar();
             }
         }
+
+        #endregion
         #endregion
 
         private void QuitButton_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void DBDropdown_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
