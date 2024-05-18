@@ -9,15 +9,15 @@ namespace AdvancedDB2
 {
     public partial class Form1 : Form
     {
-        const String DBIndexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
+        const string DBIndexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
+        const string DBUnindexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;";
+        string connectionString;
 
-        const String DBUnindexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;";
+        private readonly int transactionNumber = 100; // Set low for testing purposes
 
-        String connectionString;
-
-        private readonly int transactionNumber = 100; //Set low for testing purposes
         private int deadlockCountA = 0;
         private int deadlockCountB = 0;
+
         public Form1()
         {
             InitializeComponent();
@@ -27,21 +27,20 @@ namespace AdvancedDB2
 
             DBDropdown.Items.AddRange(new object[] { "AdventureWorks2022", "AdventureWorks2022-INDEXED" });
             DBDropdown.SelectedIndex = 0; // Default AdventureWorks2022
+
+            
         }
 
         #region Start Simulation Button
         private void StartSim_Click(object sender, EventArgs e)
         {
-            //Info console message
             Console.WriteLine("***\nSimulation started...\n***\n");
-
 
             int selectedIsolationLevel = IsoLvl_Dropdown.SelectedIndex;
             IsolationLevel isolationLevel = GetIsolationLevel(selectedIsolationLevel);
 
             int selectedDBIndex = DBDropdown.SelectedIndex;
             connectionString = SelectedDB(selectedDBIndex);
-
 
             int numberOfTypeAUsers = (int)TypeADropDown.Value;
             int numberOfTypeBUsers = (int)TypeBDropDown.Value;
@@ -73,13 +72,15 @@ namespace AdvancedDB2
             var endTime = DateTime.Now;
             var elapsed = endTime - beginTime;
 
-            //Message Box
+            // Message Box
             MessageBox.Show($"Isolation level: {isolationLevel} \nElapsed time: {elapsed.TotalSeconds} seconds\nDeadlocks (Type A): {deadlockCountA}\nDeadlocks (Type B): {deadlockCountB}", "Simulation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             DialogResult dialogResult = DialogResult.OK;
 
             if (dialogResult == DialogResult.OK)
             {
                 Console.Clear();
+                deadlockCountA = 0;
+                deadlockCountB = 0;
             }
         }
         #endregion
@@ -104,9 +105,8 @@ namespace AdvancedDB2
         #endregion
 
         #region Select Database
-        private String SelectedDB(int selectedDBIndex)
+        private string SelectedDB(int selectedDBIndex)
         {
-
             switch (selectedDBIndex)
             {
                 case 0:
@@ -187,19 +187,18 @@ namespace AdvancedDB2
                         }
                         catch (SqlException ex)
                         {
+                            Debug.WriteLine(ex.Number);
+
                             if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
                             {
-                                // Deadlock occurred, increment deadlock count for Type A
                                 Interlocked.Increment(ref deadlockCountA);
                                 Console.WriteLine("Deadlock occurred for Type A. Continuing gracefully.");
-                                // Wait for a short period and retry
                                 Thread.Sleep(rand.Next(100, 500));
                                 i--; // Retry the current transaction
                             }
                             else
                             {
                                 Debug.WriteLine("Transaction failed for Type A: " + ex.Message);
-                                Debug.WriteLine(ex.Number); // For observation purposes
                                 timeoutA++;
                                 i--;
                                 try
@@ -293,14 +292,12 @@ namespace AdvancedDB2
                         {
                             if (ex.Number == 1205 || ex.Number == 3609) // Deadlock error number
                             {
-                                // Deadlock occurred, increment deadlock count for Type B
                                 Interlocked.Increment(ref deadlockCountB);
                                 Debug.WriteLine("Deadlock occurred for Type B. Continuing gracefully.");
                             }
                             else
                             {
                                 Debug.WriteLine("Transaction failed for Type B: " + ex.Message);
-                                Debug.WriteLine(ex.Number); // For observation purposes
                                 timeoutB++;
                                 i--;
                                 try
@@ -339,7 +336,7 @@ namespace AdvancedDB2
 
             using (var command = new SqlCommand(updateQuery, connection, transaction))
             {
-                command.CommandTimeout = 1;
+                command.CommandTimeout = 30; // Increased timeout
                 command.Parameters.AddWithValue("@BeginDate", beginDate);
                 command.Parameters.AddWithValue("@EndDate", endDate);
                 command.ExecuteNonQuery();
@@ -361,14 +358,12 @@ namespace AdvancedDB2
 
             using (var command = new SqlCommand(selectQuery, connection, transaction))
             {
-                command.CommandTimeout = 1;
+                command.CommandTimeout = 30; // Increased timeout
                 command.Parameters.AddWithValue("@BeginDate", beginDate);
                 command.Parameters.AddWithValue("@EndDate", endDate);
                 command.ExecuteScalar();
             }
         }
-
-        #endregion
         #endregion
 
         private void QuitButton_Click(object sender, EventArgs e)
@@ -377,3 +372,4 @@ namespace AdvancedDB2
         }
     }
 }
+#endregion
