@@ -176,7 +176,7 @@ namespace AdvancedDB2
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MaximizeBox = false;
             this.Name = "Form1";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Transaction Manager";
             ((System.ComponentModel.ISupportInitialize)(this.TypeADropDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.TypeBDropDown)).EndInit();

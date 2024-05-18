@@ -15,8 +15,6 @@ namespace AdvancedDB2
 
         String connectionString;
 
-        private bool isStarted = false;
-
         private readonly int transactionNumber = 100; //Set low for testing purposes
         private int deadlockCountA = 0;
         private int deadlockCountB = 0;
@@ -29,16 +27,6 @@ namespace AdvancedDB2
 
             DBDropdown.Items.AddRange(new object[] { "AdventureWorks2022", "AdventureWorks2022-INDEXED" });
             DBDropdown.SelectedIndex = 0; // Default AdventureWorks2022
-
-            if (isStarted)
-            {
-                StartSimButton.Enabled = false;
-            }
-            else
-            {
-                StartSimButton.Enabled = true;
-            }
-
         }
 
         #region Start Simulation Button
@@ -46,7 +34,7 @@ namespace AdvancedDB2
         {
             //Info console message
             Console.WriteLine("***\nSimulation started...\n***\n");
-            isStarted = true;
+
 
             int selectedIsolationLevel = IsoLvl_Dropdown.SelectedIndex;
             IsolationLevel isolationLevel = GetIsolationLevel(selectedIsolationLevel);
@@ -87,10 +75,12 @@ namespace AdvancedDB2
 
             //Message Box
             MessageBox.Show($"Isolation level: {isolationLevel} \nElapsed time: {elapsed.TotalSeconds} seconds\nDeadlocks (Type A): {deadlockCountA}\nDeadlocks (Type B): {deadlockCountB}", "Simulation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            DialogResult dialogResult = DialogResult.OK;
 
-            //Info console message
-            Console.WriteLine("\n***\nSimulation complete.\n***\n");
-            isStarted = false;
+            if (dialogResult == DialogResult.OK)
+            {
+                Console.Clear();
+            }
         }
         #endregion
 
