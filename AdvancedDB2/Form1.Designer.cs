@@ -155,7 +155,6 @@ namespace AdvancedDB2
             this.DBDropdown.Name = "DBDropdown";
             this.DBDropdown.Size = new System.Drawing.Size(327, 24);
             this.DBDropdown.TabIndex = 6;
-            this.DBDropdown.SelectedIndexChanged += new System.EventHandler(this.DBDropdown_SelectedIndexChanged);
             // 
             // Form1
             // 

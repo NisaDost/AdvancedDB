@@ -9,9 +9,9 @@ namespace AdvancedDB2
 {
     public partial class Form1 : Form
     {
-        const String DBIndexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
+        const String DBIndexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
 
-        const String DBUnindexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;";
+        const String DBUnindexed = "Data Source=NISA-PC;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;";
 
         String connectionString;
 
@@ -384,11 +384,6 @@ namespace AdvancedDB2
         private void QuitButton_Click(object sender, EventArgs e)
         {
             this.Close();
-        }
-
-        private void DBDropdown_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }
