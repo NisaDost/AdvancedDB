@@ -9,9 +9,9 @@ namespace AdvancedDB2
 {
     public partial class Form1 : Form
     {
-        const String DBIndexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022;Integrated Security=True;";
+        const String DBIndexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022WithoutIndexes;Integrated Security=True;";
 
-        const String DBUnindexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022-INDEXED;Integrated Security=True;";
+        const String DBUnindexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022WithIndexes;Integrated Security=True;";
 
         String connectionString;
 
@@ -156,33 +156,36 @@ namespace AdvancedDB2
                                 begindate = "20110101";
                                 enddate = "20111231";
                                 isUpdated = true;
+                                RunUpdateQuery(connection, transaction, begindate, enddate);
                             }
                             if (rand.NextDouble() < 0.5)
                             {
                                 begindate = "20120101";
                                 enddate = "20121231";
                                 isUpdated = true;
+                                RunUpdateQuery(connection, transaction, begindate, enddate);
                             }
                             if (rand.NextDouble() < 0.5)
                             {
                                 begindate = "20130101";
                                 enddate = "20131231";
                                 isUpdated = true;
+                                RunUpdateQuery(connection, transaction, begindate, enddate);
                             }
                             if (rand.NextDouble() < 0.5)
                             {
                                 begindate = "20140101";
                                 enddate = "20141231";
                                 isUpdated = true;
+                                RunUpdateQuery(connection, transaction, begindate, enddate);
                             }
                             if (rand.NextDouble() < 0.5)
                             {
                                 begindate = "20150101";
                                 enddate = "20151231";
                                 isUpdated = true;
+                                RunUpdateQuery(connection, transaction, begindate, enddate);
                             }
-
-                            RunUpdateQuery(connection, transaction, begindate, enddate);
 
                             if (isUpdated)
                             {
@@ -260,33 +263,37 @@ namespace AdvancedDB2
                                 begindate = "20110101";
                                 enddate = "20111231";
                                 isSelected = true;
+                                RunSelectQuery(connection, transaction, begindate, enddate);
                             }
                             if (rand.NextDouble() < 0.5)
                             {
                                 begindate = "20120101";
                                 enddate = "20121231";
                                 isSelected = true;
+                                RunSelectQuery(connection, transaction, begindate, enddate);
                             }
                             if (rand.NextDouble() < 0.5)
                             {
                                 begindate = "20130101";
                                 enddate = "20131231";
                                 isSelected = true;
+                                RunSelectQuery(connection, transaction, begindate, enddate);
                             }
                             if (rand.NextDouble() < 0.5)
                             {
                                 begindate = "20140101";
                                 enddate = "20141231";
                                 isSelected = true;
+                                RunSelectQuery(connection, transaction, begindate, enddate);
                             }
                             if (rand.NextDouble() < 0.5)
                             {
                                 begindate = "20150101";
                                 enddate = "20151231";
                                 isSelected = true;
+                                RunSelectQuery(connection, transaction, begindate, enddate);
                             }
 
-                            RunSelectQuery(connection, transaction, begindate, enddate);
 
                             if (isSelected)
                             {
@@ -349,7 +356,7 @@ namespace AdvancedDB2
 
             using (var command = new SqlCommand(updateQuery, connection, transaction))
             {
-                command.CommandTimeout = 1;
+                command.CommandTimeout = 5;
                 command.Parameters.AddWithValue("@BeginDate", beginDate);
                 command.Parameters.AddWithValue("@EndDate", endDate);
                 command.ExecuteNonQuery();
@@ -371,7 +378,7 @@ namespace AdvancedDB2
 
             using (var command = new SqlCommand(selectQuery, connection, transaction))
             {
-                command.CommandTimeout = 1;
+                command.CommandTimeout = 5;
                 command.Parameters.AddWithValue("@BeginDate", beginDate);
                 command.Parameters.AddWithValue("@EndDate", endDate);
                 command.ExecuteScalar();
