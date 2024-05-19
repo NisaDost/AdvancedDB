@@ -9,15 +9,14 @@ namespace AdvancedDB2
 {
     public partial class Form1 : Form
     {
-        const String DBIndexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022WithoutIndexes;Integrated Security=True;";
-
-        const String DBUnindexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022WithIndexes;Integrated Security=True;";
+        const String DBIndexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022WithIndexes;Integrated Security=True;";
+        const String DBUnindexed = "Data Source=ERMAN;Initial Catalog=AdventureWorks2022WithoutIndexes;Integrated Security=True;";
 
         String connectionString;
 
         private bool isStarted = false;
 
-        private readonly int transactionNumber = 100; //Set low for testing purposes
+        private readonly int transactionNumber = 100; // Set low for testing purposes
         private int deadlockCountA = 0;
         private int deadlockCountB = 0;
         public Form1()
@@ -27,7 +26,7 @@ namespace AdvancedDB2
             IsoLvl_Dropdown.Items.AddRange(new object[] { "Read Uncommitted", "Read Committed", "Repeatable Read", "Serializable" });
             IsoLvl_Dropdown.SelectedIndex = 0; // Default Read Uncommitted
 
-            DBDropdown.Items.AddRange(new object[] { "AdventureWorks2022", "AdventureWorks2022-INDEXED" });
+            DBDropdown.Items.AddRange(new object[] { "AdventureWorks2022WithoutIndexes", "AdventureWorks2022WithIndexes" });
             DBDropdown.SelectedIndex = 0; // Default AdventureWorks2022
 
             if (isStarted)
@@ -38,13 +37,12 @@ namespace AdvancedDB2
             {
                 StartSimButton.Enabled = true;
             }
-
         }
 
         #region Start Simulation Button
         private void StartSim_Click(object sender, EventArgs e)
         {
-            //Info console message
+            // Info console message
             Console.WriteLine("***\nSimulation started...\n***\n");
             isStarted = true;
 
@@ -54,12 +52,10 @@ namespace AdvancedDB2
             int selectedDBIndex = DBDropdown.SelectedIndex;
             connectionString = SelectedDB(selectedDBIndex);
 
-
             int numberOfTypeAUsers = (int)TypeADropDown.Value;
             int numberOfTypeBUsers = (int)TypeBDropDown.Value;
 
             var threads = new Thread[numberOfTypeAUsers + numberOfTypeBUsers];
-
             var beginTime = DateTime.Now;
 
             for (int i = 0; i < numberOfTypeAUsers; i++)
@@ -85,10 +81,10 @@ namespace AdvancedDB2
             var endTime = DateTime.Now;
             var elapsed = endTime - beginTime;
 
-            //Message Box
+            // Message Box
             MessageBox.Show($"Isolation level: {isolationLevel} \nElapsed time: {elapsed.TotalSeconds} seconds\nDeadlocks (Type A): {deadlockCountA}\nDeadlocks (Type B): {deadlockCountB}", "Simulation Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            //Info console message
+            // Info console message
             Console.WriteLine("\n***\nSimulation complete.\n***\n");
             isStarted = false;
         }
@@ -116,7 +112,6 @@ namespace AdvancedDB2
         #region Select Database
         private String SelectedDB(int selectedDBIndex)
         {
-
             switch (selectedDBIndex)
             {
                 case 0:
@@ -140,7 +135,7 @@ namespace AdvancedDB2
             {
                 connection.Open();
 
-                for (int i = 0; i < transactionNumber; i++) // Perform 10 transactions
+                for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
                 {
                     Debug.WriteLine("Type A For içi: " + i);
                     using (var transaction = connection.BeginTransaction(isolationLevel))
@@ -246,7 +241,7 @@ namespace AdvancedDB2
             {
                 connection.Open();
 
-                for (int i = 0; i < transactionNumber; i++) // Perform 10 transactions
+                for (int i = 0; i < transactionNumber; i++) // Perform 100 transactions
                 {
                     Debug.WriteLine("Type B For içi: " + i);
 
@@ -293,7 +288,6 @@ namespace AdvancedDB2
                                 isSelected = true;
                                 RunSelectQuery(connection, transaction, begindate, enddate);
                             }
-
 
                             if (isSelected)
                             {
